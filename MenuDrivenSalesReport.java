@@ -1,90 +1,91 @@
-import java.io.*;
 import java.util.*;
+import java.io.*;
 import java.text.*;
 
-public class MenuDrivenSalesReport {
+public class MenuDrivenProgram {
 
     public static void main(String[] args) {
-        String fileName = "Donot.txt";
-        List<Map<String, String>> records = new ArrayList<>();
+        List<Map<String, String>> listOFData = new ArrayList<>();
+
+        ///////////////Step-1
+
+        File dataFile = new File("Donot.txt");
         Scanner sc = new Scanner(System.in);
+        String line;
+        try {
+            Scanner readFile = new Scanner(dataFile);
 
-        // Step 1: Read header and file data
-        String[] headers = null;
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            String headerLine = br.readLine();
-            if (headerLine == null) {
-                System.out.println("File is empty!");
-                return;
-            }
+            String header = readFile.nextLine();
+            String[] keys = header.split("\t");
 
-            headers = headerLine.split("\\t");
+            while (readFile.hasNextLine()) {
 
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] values = line.split("\\t");
-                if (values.length == headers.length) {
-                    Map<String, String> record = new HashMap<>();
-                    for (int i = 0; i < headers.length; i++) {
-                        record.put(headers[i], values[i]);
+                line = readFile.nextLine();
+                String[] values = line.split("\t");
+
+                if (keys.length == values.length) {
+                    Map<String, String> entry = new HashMap<>();
+
+                    for (int i = 0; i < keys.length; i++) {
+                        entry.put(keys[i], values[i]);
                     }
-                    records.add(record);
+                    listOFData.add(entry);
+
                 }
+
             }
 
-        } catch (IOException e) {
-            System.out.println("Error reading file: " + e.getMessage());
-            return;
+        } catch (Exception e) {
         }
 
-        // Step 2: Calculate once (to avoid re-reading file later)
+        ///////////////Step-2
         double totalSales = 0.0;
         Map<String, Double> empSales = new HashMap<>();
         Map<String, Double> productSales = new HashMap<>();
         Map<String, Double> regionSales = new HashMap<>();
         Map<String, Double> monthSales = new HashMap<>();
 
-        SimpleDateFormat inFormat = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
-        SimpleDateFormat altFormat = new SimpleDateFormat("MMM-dd-yy", Locale.ENGLISH);
-        SimpleDateFormat monthFormat = new SimpleDateFormat("MMMM", Locale.ENGLISH);
+        SimpleDateFormat dmy = new SimpleDateFormat("dd-MMM-yyyy", Locale.ENGLISH);
+        SimpleDateFormat mdy = new SimpleDateFormat("MMM-dd-yyyy", Locale.ENGLISH);
+        SimpleDateFormat output = new SimpleDateFormat("MMMM", Locale.ENGLISH);
 
-        for (Map<String, String> record : records) {
+        for (Map<String, String> entry : listOFData) {
+            int quantity = Integer.parseInt(entry.get("Qty").trim());
+            double unitPrice = Integer.parseInt(entry.get("Unit Price").trim());
+            double salesAmount = quantity * unitPrice;
+            totalSales += salesAmount;
+
+            String emp = entry.get("Rep ID");
+            empSales.put(emp, empSales.getOrDefault(emp, 0.0) + salesAmount);
+
+            String prod = entry.get("Product");
+            productSales.put(prod, productSales.getOrDefault(prod, 0.0) + salesAmount);
+
+            String region = entry.get("Region");
+            regionSales.put(region, regionSales.getOrDefault(region, 0.0) + salesAmount);
+
+            Date date = null;
+            String dateStr = entry.get("Date").trim();
+
             try {
-                int qty = Integer.parseInt(record.get("Qty").trim());
-                double unitPrice = Double.parseDouble(record.get("Unit Price").trim());
-                double saleAmount = qty * unitPrice;
-                totalSales += saleAmount;
-
-                String emp = record.get("Rep ID");
-                empSales.put(emp, empSales.getOrDefault(emp, 0.0) + saleAmount);
-
-                String product = record.get("Product");
-                productSales.put(product, productSales.getOrDefault(product, 0.0) + saleAmount);
-
-                String region = record.get("Region");
-                regionSales.put(region, regionSales.getOrDefault(region, 0.0) + saleAmount);
-
-                String dateStr = record.get("Date").trim();
-                Date date = null;
-                try {
-                    date = inFormat.parse(dateStr);
-                } catch (ParseException e) {
-                    try {
-                        date = altFormat.parse(dateStr);
-                    } catch (ParseException ex) {
-                        continue;
-                    }
-                }
-                String month = monthFormat.format(date);
-                monthSales.put(month, monthSales.getOrDefault(month, 0.0) + saleAmount);
+                date = dmy.parse(dateStr);
 
             } catch (Exception e) {
-                // skip bad record
-            }
-        }
 
-        // Step 3: Auto-generate menu
-        int choice = -1;
+                try {
+                    date = mdy.parse(dateStr);
+                } catch (ParseException pe) {
+                    continue;
+                }
+
+            }
+
+            String month = output.format(date);
+            monthSales.put(month, monthSales.getOrDefault(month, 0.0) + salesAmount);
+
+        }
+        ///////// Step-3
+            int choice = -1;
         do {
             System.out.println("\n===== AUTO-GENERATED MENU =====");
             System.out.println("1. View Total Sales Amount");
@@ -125,5 +126,6 @@ public class MenuDrivenSalesReport {
         } while (choice != 0);
 
         sc.close();
+
     }
 }
