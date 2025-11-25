@@ -2,7 +2,7 @@ import java.util.*;
 import java.io.*;
 import java.text.*;
 
-public class MenuDrivenProgram {
+public class MenuDrivenSalesReport {
 
     public static void main(String[] args) {
         List<Map<String, String>> listOFData = new ArrayList<>();
@@ -129,3 +129,4 @@ public class MenuDrivenProgram {
 
     }
 }
+
