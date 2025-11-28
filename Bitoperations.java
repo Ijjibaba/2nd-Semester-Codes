@@ -1,5 +1,5 @@
 import java.util.Scanner;
-public class Bitoperations {
+public class Bitoperationspractice {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
 
@@ -25,4 +25,5 @@ public class Bitoperations {
         
         sc.close();
     }
+
 }
